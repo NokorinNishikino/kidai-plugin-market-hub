@@ -1,43 +1,37 @@
-# Kidai Plugin Market（纪代插件市场）— DeepSeek Harness 插件市场
+# Kidai Plugin Market Hub（纪代插件市场）— DeepSeek Harness 插件市场中心
 
-> **项目 / npm 包名：** `kidai-plugin-market` —— 品牌为 **Kidai Plugin Market / 纪代插件市场**,用于与功能相同、但品牌不同的其他项目区分(「插件市场」是功能名,就像不同快餐品牌的薯条)。
-> 旧名 `dsh-plugin-market` 已被占用,本项目不再使用。
+> **项目 / npm 包名：** `kidai-plugin-market-hub` —— 品牌为 **Kidai Plugin Market Hub / 纪代插件市场**。一个 Hub 启动器：把完整的插件市场放到主页侧边栏一键可达的位置，并提供一个带"立即重启"按钮的独立全屏 Hub 页面。
 
-一个面向 DeepSeek Harness（DSH）的双端（Host + Client）插件：在 **设置 → 插件** 页面中，与「插件配置」「插件列表」并列新增一个 **「插件市场」** 页签，实时联网展示社区已发布的 DSH 插件（GitHub `dsh-plugin` 话题、npm、以及社区精选的 awesome-dsh-plugin 列表），支持滚动列表、搜索、排序、跳转发布页与一键安装到本地。
-
-![功能位置] 设置 → 插件 → 插件市场（与「插件配置」「插件列表」并列）
+一个面向 DeepSeek Harness（DSH）的双端（Host + Client）插件：在主页侧边栏**「设置」按钮上方**注入一个启动器（`sidebar.footer.action`，order 10），点击后打开**独立的全屏 Hub 页面**（`shell.overlay`），承载双页签的插件市场界面——**「插件市场」** 与 **「已安装」**，页面右上角常驻 **「立即重启」** 按钮。
 
 ## 功能
 
-- **实时目录**：Host 端合并抓取 GitHub 上带 `dsh-plugin` 话题的仓库（`topic:dsh-plugin` 搜索接口）、npm 注册表搜索结果与社区精选的 awesome-dsh-plugin 列表，5 分钟内存缓存；浏览器端有直连 GitHub API 的降级路径。
-- **上下滑动的插件列表**：卡片网格，容器内滚动（`max-height + overflow-y`）。
-- **搜索**：按插件名称（含仓库全名）与介绍文字匹配。
-- **排序**：最近更新 / 星标最多 / 名称。
-- **每插件一张卡片**：仓库所有者的头像作为图标（无头像时显示首字母占位），配名称、简介、话题标签、星标数与更新时间。
-- **「查看发布页」**：新窗口打开该插件的 GitHub 发布页。
-- **「安装到本地」**：经确认后，Host 端在当前 DSH 配置目录中执行 `pnpm add`（优先解析为 npm 包名，失败则回退到 `git+https`），并自动把声明了 `dsh.bundle.patch` 的插件追加到 `dsh.profile.bundles`，与 `dsh plugin add` 的收敛逻辑一致；安装成功提示「重启 DSH 后生效」。
+- **侧边栏启动器** — 注入 `sidebar.footer.action`，渲染在主页侧边栏「设置」按钮正上方；一键打开 Hub。
+- **独立全屏 Hub 页面** — `shell.overlay` 全屏浮层，头部栏包含：标题、「立即重启」（两步确认，调用 Host 端 `restartApp`）与关闭按钮。
+- **双页签合一** — 市场目录与已装插件管理集中在一个全屏页面，无需钻进设置页深层。
+- **实时目录** — Host 端合并抓取 GitHub 上带 `dsh-plugin` 话题的仓库（`topic:dsh-plugin` 搜索接口）、npm 注册表搜索结果与社区精选的 awesome-dsh-plugin 列表，5 分钟内存缓存；浏览器端有直连 GitHub API 的降级路径。
+- **搜索与排序** — 按插件名称（含仓库全名）与介绍文字匹配；按最近更新 / 星标最多 / 名称排序。
+- **每插件一张卡片** — 仓库所有者的头像作为图标（无头像时显示首字母占位），配名称、简介、话题标签、星标数与更新时间。
+- **「查看发布页」** — 新窗口打开该插件的 GitHub 发布页。
+- **「安装到本地」** — 经确认后，Host 端在当前 DSH 配置目录中执行 `pnpm add`（优先解析为 npm 包名，失败则回退到 `git+https`），并自动把声明了 `dsh.bundle.patch` 的插件追加到 `dsh.profile.bundles`，与 `dsh plugin add` 的收敛逻辑一致；安装成功提示「重启 DSH 后生效」。
+- **已安装页管理** — 单插件启用 / 禁用（`setEnabled` / `cancelEnabled`）、在文件管理器中打开插件安装目录（`openLocal`）、检查是否有更新的 npm 版本（`checkUpdates`）、把单个插件更新到最新版（`updatePlugin`）、查看其 README（`fetchReadme`）、执行**静态安全审计**（`auditPackage`，发现高危风险时拦截安装）。
+- **顶部一键重启** — Hub 头部「立即重启」按钮，安装 / 更新 / 启停后即时重启 DSH。
 
 ## 安装
-
-### 通过插件市场自身（推荐）
-
-1. 先安装本插件（见下），重启 DSH；
-2. 打开 设置 → 插件 → 插件市场，找到本插件或任意插件，点击「安装到本地」；
-3. 重启 DSH 使新插件生效。
 
 ### 手动安装到 Desktop / Web 配置
 
 在 DSH 命令行中对当前使用的 profile（Desktop 默认是 `desktop`，Web 默认是 `web`）执行：
 
 ```bash
-dsh plugin --profile desktop add kidai-plugin-market
+dsh plugin --profile desktop add kidai-plugin-market-hub
 ```
 
 或使用本地路径/仓库地址：
 
 ```bash
-dsh plugin --profile desktop add file:D:\path\to\kidai-plugin-market
-dsh plugin --profile desktop add git+https://github.com/<owner>/kidai-plugin-market.git
+dsh plugin --profile desktop add file:D:\path\to\kidai-plugin-market-hub
+dsh plugin --profile desktop add git+https://github.com/NokorinNishikino/kidai-plugin-market-hub.git
 ```
 
 然后重启 DSH。安装脚本 `scripts/install-profile.ps1` 也可完成等价操作（把包复制进配置目录并更新 manifest）。
@@ -47,17 +41,18 @@ dsh plugin --profile desktop add git+https://github.com/<owner>/kidai-plugin-mar
 ## 卸载
 
 ```bash
-dsh plugin --profile desktop remove kidai-plugin-market
+dsh plugin --profile desktop remove kidai-plugin-market-hub
 ```
 
 ## 工作原理
 
 | 组成部分 | 文件 | 说明 |
 | --- | --- | --- |
-| Host 半 | `lib/index.js` | Cordis 插件，默认导出 `PluginMarketGateway`（`TypertRemoteService`，命名空间 `pluginMarket`），通过 SRC 标记暴露 `listPublished` / `installed` / `installPlugin` 三个 Remote 方法。 |
-| 组合层 | `cordis.patch.yml` | 向 loader 插入 `plugin-market` 行；同一行因包声明 `dsh.client` 而同时进入浏览器模块清单。 |
-| Client 半 | `lib/client.js` | 浏览器 bundle：向 `settings.plugins.tab` 注册 `market` 页签（order 20），挂载 `pluginMarket` Remote 描述符（手写严格 codec，无需 zod），渲染插件市场 UI。 |
+| Host 半 | `lib/index.js` | Cordis 插件，默认导出 `PluginMarketGateway`（`TypertRemoteService`，命名空间 `pluginMarketHub`），通过 SRC 标记暴露 `listPublished` / `installed` / `installPlugin` / `setEnabled` / `openLocal` / `cancelEnabled` / `checkUpdates` / `updatePlugin` / `fetchReadme` / `auditPackage` / `restartApp` 等 Remote 方法。 |
+| 组合层 | `cordis.patch.yml` | 插入插件行；同一行因包声明 `dsh.client` 而同时进入浏览器模块清单。 |
+| Client 半 | `lib/client.js` | 浏览器 bundle：注册侧边栏启动器（`sidebar.footer.action`，order 10）与全屏 Hub 页面（`shell.overlay`，order 10），挂载 `pluginMarketHub` Remote 描述符（手写严格 codec，无需 zod），渲染双页签 UI。 |
 | 安装通道 | Host `installPlugin(spec)` | 校验 spec（npm 包名 / GitHub 仓库），解析 pnpm，在 profile 目录执行 `pnpm add`，收敛 `dsh.profile.bundles`。 |
+| 重启通道 | Host `restartApp()` | 检测正在运行的 DSH 部署并请求重启；Hub 头部展示两步确认的「立即重启」按钮。 |
 
 ## 目录数据源与网络问题
 
