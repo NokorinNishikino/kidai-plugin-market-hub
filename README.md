@@ -1,3 +1,9 @@
+<div align="center">
+
+**English** · [**简体中文**](README.zh.md)
+
+</div>
+
 # Kidai Plugin Market Hub（纪代插件市场）— Marketplace Hub for DeepSeek Harness
 
 > **Project / package name:** `kidai-plugin-market-hub` — the brand is **Kidai Plugin Market Hub / 纪代插件市场**. A hub launcher that puts the full plugin marketplace one click away from the home sidebar, plus a standalone full-screen hub page with an immediate-restart button on top.
