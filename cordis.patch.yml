@@ -1,0 +1,13 @@
+# kidai-plugin-market-hub bundle patch: one loader row mounts both halves.
+#
+# The row mounts this package as a Cordis plugin; its default export is the
+# host half (the pluginMarketHub Remote gateway). Because the package also
+# declares `dsh.client`, the client-modules node half scans this same loader
+# entry and serves lib/client.js to the browser as the 纪代市场 hub page.
+#
+# A patch replaces the targeted row's whole `config`, so the row below states
+# every key it owns (none besides id/name).
+
+- insert:
+    - id: plugin-market-hub
+      name: 'kidai-plugin-market-hub'

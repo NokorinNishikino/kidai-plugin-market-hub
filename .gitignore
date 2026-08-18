@@ -1,0 +1,17 @@
+# Dependencies
+node_modules/
+
+# Build artifacts
+build/
+dist/
+
+# Archives / logs
+*.tgz
+*.log
+npm-debug.log*
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
