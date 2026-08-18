@@ -6,7 +6,8 @@
 
 # Kidai Plugin Market Hub（纪代插件市场）— DeepSeek Harness 插件市场
 
-> **项目 / npm 包名：** `kidai-plugin-market-hub` —— 品牌为 **Kidai Plugin Market Hub / 纪代插件市场**。一个 Hub 启动器：把完整的插件市场放到主页侧边栏一键可达的位置，并提供一个带"立即重启"按钮的独立全屏 Hub 页面，便于在调整插件配置后直接重启使用。
+> **项目 / npm 包名：** `kidai-plugin-market-hub` —— **Kidai Plugin Market Hub / 纪代插件市场**。
+> 一个 Hub 启动器：把完整的插件市场放到主页侧边栏一键可达的位置，并提供一个带"立即重启"按钮的独立全屏 Hub 页面，便于在调整插件配置后直接重启使用。
 
 一个面向 DeepSeek Harness（DSH）的双端（Host + Client）插件：在主页侧边栏**「设置」按钮上方**注入一个启动器（`sidebar.footer.action`，order 10），点击后打开**独立的全屏 Hub 页面**（`shell.overlay`），承载双页签的插件市场界面——**「插件市场」** 与 **「已安装」**，页面右上角常驻 **「立即重启」** 按钮。
 
