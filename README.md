@@ -6,7 +6,8 @@
 
 # Kidai Plugin Market Hub（纪代插件市场）— Marketplace Hub for DeepSeek Harness
 
-> **Project / package name:** `kidai-plugin-market-hub` — the brand is **Kidai Plugin Market Hub / 纪代插件市场**. A hub launcher that puts the full plugin marketplace one click away from the home sidebar, plus a standalone full-screen hub page with an immediate-restart button on top.
+> **Project / package name:** `kidai-plugin-market-hub` — **Kidai Plugin Market Hub / 纪代插件市场**.
+> A hub launcher that puts the full plugin marketplace one click away from the home sidebar, plus a standalone full-screen hub page with an immediate-restart button on top.
 
 A dual-face (Host + Client) plugin for DeepSeek Harness (DSH) that adds a **launcher above the 设置 (Settings) button on the home sidebar**. Clicking it opens a **standalone full-screen hub page** (`shell.overlay`) hosting the two-tab marketplace UI — **插件市场 (marketplace)** and **已安装 (installed)** — with **restart DSH** pinned at the top-right.
 
