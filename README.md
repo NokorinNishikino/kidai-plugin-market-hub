@@ -1,95 +1,108 @@
 <div align="center">
 
-**English** · [**简体中文**](README.zh.md)
+**简体中文** · [**English**](README.en.md)
 
 </div>
 
-# Kidai Plugin Market Hub（纪代插件市场）— Marketplace Hub for DeepSeek Harness
+# Kidai Plugin Market Hub（纪代插件市场）— DeepSeek Harness 插件市场中心
 
-> **Project / package name:** `kidai-plugin-market-hub` — **Kidai Plugin Market Hub / 纪代插件市场**.
-> A hub launcher that puts the full plugin marketplace one click away from the home sidebar, plus a standalone full-screen hub page with an immediate-restart button on top.
+> **项目 / npm 包名：** `kidai-plugin-market-hub` —— 品牌为 **Kidai Plugin Market Hub / 纪代插件市场**。一个 Hub 启动器：把完整的插件市场放到主页侧边栏一键可达的位置，并提供一个带「立即重启」按钮的独立全屏 Hub 页面。
 
-A dual-face (Host + Client) plugin for DeepSeek Harness (DSH) that adds a **launcher above the 设置 (Settings) button on the home sidebar**. Clicking it opens a **standalone full-screen hub page** (`shell.overlay`) hosting the two-tab marketplace UI — **插件市场 (marketplace)** and **已安装 (installed)** — with **restart DSH** pinned at the top-right.
+一个面向 DeepSeek Harness（DSH）的双端（Host + Client）插件：在主页侧边栏**「设置」按钮上方**注入一个启动器（`sidebar.footer.action`），点击后打开**独立的全屏 Hub 页面**（`shell.overlay`），承载双页签的插件市场界面——**「插件市场」** 与 **「已安装」**，页面右上角常驻 **「立即重启」** 按钮。
 
-## Features
+## 功能
 
-- **Sidebar launcher** — injected into `sidebar.footer.action` (order 10), rendered right above the home sidebar's 设置 button; one click opens the hub.
-- **Standalone full-screen hub page** — `shell.overlay` overlay with a header bar: title, **"Restart now"** (two-step confirm, calls the Host `restartApp`), and a close button.
-- **Two tabs, one place** — the marketplace catalog and installed-plugin management live in a single full-screen page instead of deep inside Settings.
-- **Live catalog** — merges GitHub repos tagged `dsh-plugin` (`topic:dsh-plugin` search API), npm registry search results, and the community-curated awesome-dsh-plugin list, cached in memory for 5 minutes; the browser bundle has a direct-fetch fallback path.
-- **Search & sorting** — matches plugin name (including full repo name) and description; sort by recently updated / most starred / name.
-- **One card per plugin** — the repository owner's avatar as the icon (initial-letter fallback), plus name, description, topic tags, star count, and update date.
-- **"Release page" button** — opens the plugin's GitHub page in a new window.
-- **"Install locally" button** — after confirmation, the Host runs `pnpm add` in the active DSH profile directory (resolving an npm package name first, falling back to `git+https`), then appends any new `dsh.bundle.patch`-declaring dependency to `dsh.profile.bundles` — the same reconciliation `dsh plugin add` performs. Success reports "restart DSH to activate".
-- **Installed-tab management** — enable / disable per plugin (`setEnabled` / `cancelEnabled`), open the plugin's install directory in the file manager (`openLocal`), check for newer npm versions (`checkUpdates`), update one plugin to latest (`updatePlugin`), view its README (`fetchReadme`), and run a **static security audit** (`auditPackage`) that blocks installation when high-risk findings are detected.
-- **Restart on top** — the hub header's "Restart now" button restarts DSH immediately after installs, updates, or toggles.
+- **侧边栏启动器** — 注入 `sidebar.footer.action`，渲染在主页侧边栏「设置」按钮正上方；一键打开 Hub。
+- **独立全屏 Hub 页面** — `shell.overlay` 全屏浮层，头部栏包含：标题、「立即重启」（两步确认，调用 Host 端 `restartApp`）与关闭按钮。
+- **双页签合一** — 市场目录与已装插件管理集中在一个全屏页面，无需钻进设置页深层。
+- **实时目录** — Host 端合并抓取 GitHub 上带 `dsh-plugin` 话题的仓库（`topic:dsh-plugin` 搜索接口）、npm 注册表搜索结果与社区精选的 awesome-dsh-plugin 列表，5 分钟内存缓存；浏览器端有直连 GitHub API 的降级路径。
+- **搜索与排序** — 按插件名称（含仓库全名）与介绍文字匹配；按最近更新 / 星标最多 / 名称排序。
+- **每插件一张卡片** — 仓库所有者的头像作为图标（无头像时显示首字母占位），配名称、简介、话题标签、星标数与更新时间。
+- **「查看发布页」** — 新窗口打开该插件的 GitHub 发布页。
+- **「安装到本地」** — 经确认后，Host 端在当前 DSH 配置目录中执行 `pnpm add`（优先解析为 npm 包名，失败则回退到 git），并自动把声明了 `dsh.bundle.patch` 的插件追加到 `dsh.profile.bundles`，与 `dsh plugin add` 的收敛逻辑一致；安装成功提示「重启 DSH 后生效」。
+- **安装安全防线（通用自动化）** — 安装前执行**静态安全审计**（`auditPackage`，高危风险拦截）；安装后逐项校验：
+  - **可加载性校验** — 插件必须声明 `dsh.bundle.patch` 且能解析出真实入口文件（`main` / `exports` / Node 默认 `index.js`），缺入口的伪插件（如部署脚本仓库伪装 `dsh.bundle`）会在安装时被拒绝，避免启动时整个插件树崩溃；
+  - **运行时兼容检查** — 针对旧版 DSH（rc.6）插件给出**风险确认**流程：先自动修补已知兼容差异（keyed-slot 注册注入等），用户点「我已知晓」后才放行，并随成功消息附带风险提示；
+  - **`@local` 链接自动创建** — 插件 patch 引用 `@local/<包名>` 时自动创建 junction，无需手动执行安装脚本；
+  - **重复条目 id 防护** — patch 插入与组合树冲突的 loader id 时取消安装并说明原因；
+  - **TypeScript 源码包子包自动构建** — 子包缺构建产物时自动 `pnpm install` + 构建，构建失败即回滚。
+- **已安装页管理** — 单插件启用 / 禁用（`setEnabled` / `cancelEnabled`）、在文件管理器中打开插件安装目录（`openLocal`）、检查是否有更新的 npm 版本（`checkUpdates`）、把单个插件更新到最新版（`updatePlugin`）、查看其 README（`fetchReadme`）、卸载（`uninstallPlugin`，含 `@local/*` 链接包）。
+- **孤儿插件管理** — 扫描"文件存在但未挂载"的插件（`scanOrphanPlugins`），以灰色行并入已安装列表：可**启用**（`mountOrphan`，重新挂载并清除禁用标记）或**删除**（`removeOrphanFiles`，清理残留文件；已声明依赖的自动转完整卸载）。挂载前同样校验入口，杜绝再次引入启动崩溃。
+- **顶部一键重启** — Hub 头部「立即重启」按钮，安装 / 更新 / 启停后即时重启 DSH。
 
-## Install
+## 安装
 
-### Manual install into a Desktop / Web profile
+### 手动安装到 Desktop / Web 配置
 
-From a DSH terminal, target the profile you use (Desktop defaults to `desktop`, Web to `web`):
+在 DSH 命令行中对当前使用的 profile（Desktop 默认是 `desktop`，Web 默认是 `web`）执行：
 
 ```bash
 dsh plugin --profile desktop add kidai-plugin-market-hub
 ```
 
-Local path or git spec works too:
+或使用本地路径/仓库地址：
 
 ```bash
 dsh plugin --profile desktop add file:D:\path\to\kidai-plugin-market-hub
 dsh plugin --profile desktop add git+https://github.com/NokorinNishikino/kidai-plugin-market-hub.git
 ```
 
-Then restart DSH. The `scripts/install-profile.ps1` helper performs the equivalent local install (copies the package into the profile tree and updates the manifest).
+然后重启 DSH。安装脚本 `scripts/install-profile.ps1` 也可完成等价操作（把包复制进配置目录并更新 manifest）。
 
-> Requires `pnpm` on PATH (or the pnpm bundled with DSH), plus network access to `api.github.com` (catalog) and `registry.npmjs.org` (install validation).
+> 需要本机可用的 `pnpm`（或 DSH 应用自带的 pnpm），并确保网络可访问 `api.github.com`（目录抓取）与 `registry.npmjs.org`（安装校验）。
 
-## Uninstall
+## 卸载
 
 ```bash
 dsh plugin --profile desktop remove kidai-plugin-market-hub
 ```
 
-## How it works
+## 工作原理
 
-| Part | File | Notes |
+| 组成部分 | 文件 | 说明 |
 | --- | --- | --- |
-| Host half | `lib/index.js` | Cordis plugin whose default export is `PluginMarketGateway` (a `TypertRemoteService`, namespace `pluginMarketHub`) exposing `listPublished` / `installed` / `installPlugin` / `setEnabled` / `openLocal` / `cancelEnabled` / `checkUpdates` / `updatePlugin` / `fetchReadme` / `auditPackage` / `restartApp` via SRC Remote markers. |
-| Composition | `cordis.patch.yml` | Inserts the plugin rows; because the package also declares `dsh.client`, the same rows feed the browser module manifest. |
-| Client half | `lib/client.js` | Browser bundle registering the sidebar launcher (`sidebar.footer.action`, order 10) and the full-screen hub page (`shell.overlay`, order 10), mounting the `pluginMarketHub` Remote descriptors (hand-written strict codecs, no zod), and rendering the two-tab UI. |
-| Install channel | Host `installPlugin(spec)` | Validates the spec (npm name / GitHub repo), resolves pnpm, runs `pnpm add` in the profile directory, reconciles `dsh.profile.bundles`. |
-| Restart channel | Host `restartApp()` | Detects the running DSH deployment and requests a restart; the hub header shows the two-step "Restart now" button. |
+| Host 半 | `lib/index.js` | Cordis 插件，默认导出 `PluginMarketGateway`（`TypertRemoteService`，命名空间 `pluginMarketHub`），通过 SRC 标记暴露 `listPublished` / `installed` / `installPlugin` / `setEnabled` / `openLocal` / `cancelEnabled` / `checkUpdates` / `updatePlugin` / `fetchReadme` / `auditPackage` / `restartApp` / `uninstallPlugin` / `scanOrphanPlugins` / `mountOrphan` / `removeOrphanFiles` 等 Remote 方法。 |
+| 组合层 | `cordis.patch.yml` | 插入插件行；同一行因包声明 `dsh.client` 而同时进入浏览器模块清单。 |
+| Client 半 | `lib/client.js` | 浏览器 bundle：注册侧边栏启动器（`sidebar.footer.action`）与全屏 Hub 页面（`shell.overlay`），挂载 `pluginMarketHub` Remote 描述符（手写严格 codec，无需 zod），渲染双页签 UI。 |
+| 安装通道 | Host `installPlugin(spec)` | 校验 spec（npm 包名 / GitHub 仓库），解析 pnpm，在 profile 目录执行 `pnpm add`，收敛 `dsh.profile.bundles`。 |
+| 重启通道 | Host `restartApp()` | 检测正在运行的 DSH 部署并请求重启；Hub 头部展示两步确认的「立即重启」按钮。 |
 
-## Catalog sources & network notes
+## 目录数据源与网络问题
 
-Sources are tried in order; the first success wins (the tab shows which source was used below its heading):
+目录按顺序尝试以下数据源，**第一个成功即采用**（页签标题下方会显示本次的数据来源）：
 
-1. **GitHub API (official)** — `api.github.com` `topic:dsh-plugin` repository search;
-2. **GitHub API mirrors** — `ghfast.top` / `ghproxy.net` prefix proxies (used when the official API is unreachable);
-3. **npm official search** — `registry.npmjs.org/-/v1/search?text=dsh-plugin`, filtered to `dsh-plugin-*` / `dsh-*` names;
-4. **npmmirror search** — `registry.npmmirror.com/-/v1/search` (usually the fastest/most reliable from mainland China);
-5. **awesome-dsh-plugin curated list** — the community-maintained [`awesome-dsh-plugin/awesome-dsh-plugin`](https://github.com/awesome-dsh-plugin/awesome-dsh-plugin) README, parsed for `- [owner/repo](url) - description` bullets (including monorepo `#subpackage` entries) and merged into the catalog under an "AWESOME" source badge. Fetched through the same CDN-first chain as repo files, so it consumes no GitHub API quota.
+1. **GitHub API（官方）** — `api.github.com` 的 `topic:dsh-plugin` 仓库搜索；
+2. **GitHub API 镜像** — `ghfast.top`、`ghproxy.net` 前缀代理（官方接口不可达时使用）；
+3. **npm 官方搜索** — `registry.npmjs.org/-/v1/search?text=dsh-plugin`，按 `dsh-plugin-*` / `dsh-*` 命名惯例过滤；
+4. **npmmirror 搜索** — `registry.npmmirror.com/-/v1/search`（国内网络通常最快、最稳）；
+5. **awesome-dsh-plugin 精选列表** — 社区维护的 [`awesome-dsh-plugin/awesome-dsh-plugin`](https://github.com/awesome-dsh-plugin/awesome-dsh-plugin) README，解析 `- [owner/repo](url) - 描述` 条目（含 monorepo 的 `#子包` 条目）并合并进目录，来源标记为「AWESOME」徽标；通过与仓库文件相同的 CDN 优先链路抓取，不消耗 GitHub API 配额。
 
-If every source fails, the last successfully fetched catalog persisted at `.plugin-market-cache.json` inside the profile directory is returned (marked "offline cache"); only a never-succeeded run reports an error.
+**GitHub 安装的镜像回退** — 当 `github.com` 不可达时，普通 GitHub 仓库安装自动改用 **tarball 下载链**（codeload → ghproxy → ghfast → gh-proxy），避免 `pnpm` 的 git 协议在不可达网络上挂起数分钟。
 
-**If the list still fails to load**, try any of:
+全部失败时回退到**上次成功抓取并落盘的缓存**（存于 profile 目录 `.plugin-market-cache.json`，页面标注"离线缓存"）；从未成功过才显示错误。
 
-- Set the environment variable `DSH_PLUGIN_MARKET_GITHUB_API` to a working GitHub API mirror base (tried first), then restart DSH, e.g.:
+**如果列表仍然拉取失败**，可选办法（任选其一）：
+
+- 设置环境变量 `DSH_PLUGIN_MARKET_GITHUB_API` 为可用的 GitHub API 镜像/代理基址（会被最先尝试），然后重启 DSH，例如：
 
   ```powershell
   setx DSH_PLUGIN_MARKET_GITHUB_API "https://ghfast.top/https://api.github.com"
   ```
 
-  (`setx` takes effect for newly started processes only.)
-- Make sure at least one of `registry.npmjs.org` / `registry.npmmirror.com` is reachable — either npm source is enough for the catalog to load.
-- The "Refresh" button bypasses the 5-minute cache and forces a refetch.
+  （`setx` 后需从新的终端/重新登录启动 DSH 才会生效。）
+- 在机器上确认 `registry.npmjs.org` 或 `registry.npmmirror.com` 至少一个可达；只要任一 npm 源可达，目录即可加载。
+- 页面「刷新」按钮会绕过 5 分钟缓存强制重新抓取。
 
-## Develop & publish
+## 更新记录
 
-- Follow the community `dsh-plugin-*` naming convention and publish to npm; tag the GitHub repo with the `dsh-plugin` topic to appear in this marketplace.
-- Host changes (`lib/index.js`) take effect on restart; browser-bundle changes (`lib/client.js`) take effect on restart (or through the `dsh-client-hmr` dev chain).
-- Local syntax check: `node --check lib/index.js && node --check lib/client.js`.
+详见 [CHANGELOG.md](CHANGELOG.md)。
+
+## 开发与发布
+
+- 包名遵循社区惯例 `dsh-plugin-*`，发布到 npm；GitHub 仓库打上 `dsh-plugin` 话题即可被本插件收录。
+- 修改 `lib/index.js`（Host）后直接生效于重启；修改 `lib/client.js`（浏览器 bundle）后重启 DSH（或依赖 `dsh-client-hmr` 的开发热更链路）。
+- 本地验证语法：`node --check lib/index.js && node --check lib/client.js`。
+- 测试套件：`node scripts/test-install-guard.mjs`（安装防线）、`node scripts/smoke-test-hub.mjs`（Remote 挂载）、`node scripts/render-test-hub.mjs`（客户端渲染）、`node scripts/test-client-patch.mjs`（客户端修补）、`node scripts/test-awesome-stars.mjs`（目录增强）。
 
 ## License
 
