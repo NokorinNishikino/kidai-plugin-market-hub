@@ -122,9 +122,12 @@ const overlay = overlayRegistration();
 check("overlay id is kidai-plugin-market-hub", overlay.options.id === "kidai-plugin-market-hub");
 check("overlay carries the shared store", overlay.options.store !== void 0);
 const overlayInjected = overlay.options.inject();
-check("overlay injects all marketplace fns + restartApp", ["listPublished", "installed", "install", "setEnabled", "openLocal", "cancelEnabled", "auditPackage", "checkUpdates", "updatePlugin", "fetchReadme", "restartApp"].every((name) => typeof overlayInjected[name] === "function"));
+check("overlay injects all marketplace fns + restartApp + favorites", ["listPublished", "installed", "install", "setEnabled", "openLocal", "cancelEnabled", "auditPackage", "checkUpdates", "updatePlugin", "fetchReadme", "restartApp", "favoritesGet", "favoritesSet", "uninstallPlugin", "scanOrphanPlugins", "mountOrphan", "removeOrphanFiles"].every((name) => typeof overlayInjected[name] === "function"));
 
-check("Remote contribution mounts 11 methods under pluginMarketHub", contributions.length === 1 && contributions[0].descriptors.length === 11 && contributions[0].descriptors.every((d) => d.namespace === "pluginMarketHub"), JSON.stringify(contributions[0]?.descriptors?.map((d) => d.method)));
+check("Remote contribution mounts 17 methods under pluginMarketHub", contributions.length === 1 && contributions[0].descriptors.length === 17 && contributions[0].descriptors.every((d) => d.namespace === "pluginMarketHub"), JSON.stringify(contributions[0]?.descriptors?.map((d) => d.method)));
+check("descriptors include favoritesGet/favoritesSet", contributions[0].descriptors.some((d) => d.method === "favoritesGet") && contributions[0].descriptors.some((d) => d.method === "favoritesSet"));
+check("descriptors include uninstallPlugin/scanOrphanPlugins", contributions[0].descriptors.some((d) => d.method === "uninstallPlugin") && contributions[0].descriptors.some((d) => d.method === "scanOrphanPlugins"));
+check("descriptors include mountOrphan/removeOrphanFiles", contributions[0].descriptors.some((d) => d.method === "mountOrphan") && contributions[0].descriptors.some((d) => d.method === "removeOrphanFiles"));
 
 check("launcher source renders a 纪代市场 button", source.includes("hubButton") && source.includes("actions.open()"));
 check("overlay hosts the two-tab UI with restart on top", source.includes("PluginMarketTab") && source.includes("dshm_restartBtn") && source.includes("dshm_hubHeader") && source.includes("actions.close()"));
