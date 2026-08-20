@@ -57,6 +57,19 @@ Then restart DSH. The `scripts/install-profile.ps1` helper performs the equivale
 dsh plugin --profile desktop remove kidai-plugin-market-hub
 ```
 
+## Deployment environments
+
+KPMH works identically in both DSH deployment shapes (browse / install / uninstall / toggle / orphan management / updates / security audit):
+
+| Deployment | How to start | Status |
+| --- | --- | --- |
+| **Desktop app** (embedded Web UI) | Launch DSH Desktop | ✅ Fully functional |
+| **Standalone Web deployment** | `dsh --profile web --port 8080` (or `dsh web --port 8080`) | ✅ Fully functional |
+
+**The only difference**: a standalone Web deployment has no Electron runtime, so the hub header's "Restart now" button degrades to "please restart DSH manually" (`restartSupported=false`); everything else works over the same RPC channel as Desktop.
+
+> **Note**: a standalone Web deployment MUST be started through the `dsh` command (it passes `--expose-internals`, which lets the loader resolve third-party bundles from the profile's `node_modules`). Running `node .../bin.js web` directly fails to load third-party plugins because that flag is missing.
+
 ## How it works
 
 | Part | File | Notes |

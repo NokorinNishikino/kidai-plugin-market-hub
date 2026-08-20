@@ -57,6 +57,19 @@ dsh plugin --profile desktop add git+https://github.com/NokorinNishikino/kidai-p
 dsh plugin --profile desktop remove kidai-plugin-market-hub
 ```
 
+## 部署环境支持
+
+KPMH 支持两种 DSH 部署形态，**功能完全一致**（浏览 / 安装 / 卸载 / 启停 / 孤儿管理 / 更新 / 安全审计）：
+
+| 部署形态 | 启动方式 | 状态 |
+| --- | --- | --- |
+| **Desktop 应用**（内嵌 Web 界面） | 启动 DSH Desktop | ✅ 完整可用 |
+| **独立 Web 部署** | `dsh --profile web --port 8080`（或 `dsh web --port 8080`） | ✅ 完整可用 |
+
+**唯一差异**：独立 Web 部署没有 Electron 运行时，Hub 顶部的「立即重启」按钮会降级为提示"请手动重启 DSH"（`restartSupported=false`）；其余所有功能通过 RPC 通道与 Desktop 一致。
+
+> **注意**：独立 Web 部署必须通过 `dsh` 命令启动（该命令自带 `--expose-internals`，加载器才能从 profile 的 `node_modules` 解析第三方 bundle）。直接用 `node .../bin.js web` 启动会因缺少该参数而无法加载第三方插件。
+
 ## 工作原理
 
 | 组成部分 | 文件 | 说明 |
