@@ -1,121 +1,116 @@
 <div align="center">
 
+# 🐋 Kidai Plugin Market Hub (纪代插件市场)
+
+**Install in one click · Manage everywhere · Stay safe** — the plugin marketplace hub for DeepSeek Harness
+
 [**简体中文**](README.md) · **English**
 
 </div>
 
-# Kidai Plugin Market Hub (纪代插件市场) — Marketplace Hub for DeepSeek Harness
+---
 
-> **Project / package name:** `kidai-plugin-market-hub` — the brand is **Kidai Plugin Market Hub / 纪代插件市场**. A hub launcher that puts the full plugin marketplace one click away from the home sidebar, plus a standalone full-screen hub page with an immediate-restart button on top.
+## ✨ Why use it
 
-A dual-face (Host + Client) plugin for DeepSeek Harness (DSH) that adds a **launcher above the 设置 (Settings) button on the home sidebar**. Clicking it opens a **standalone full-screen hub page** (`shell.overlay`) hosting the two-tab marketplace UI — **插件市场 (marketplace)** and **已安装 (installed)** — with **restart DSH** pinned at the top-right.
+The DeepSeek Harness (DSH) plugin ecosystem keeps growing, but finding, installing and managing plugins is scattered across several places. **Kidai Plugin Market Hub** brings it all into one standalone full-screen page, one click away from the sidebar:
 
-## Features
+- 🗂️ **One place to browse 1700+ plugins** — merges the GitHub `dsh-plugin` topic, npm registry, and the community-curated awesome list; searchable, sortable, categorizable;
+- ⚡ **One-click install** — installs straight into your active DSH profile, reconciles `bundles`, activates on restart;
+- 🛡️ **Install and it just works — never breaks DSH** — the market auto-runs a security audit, entry-point validation, runtime-compat check, keyed-slot repair, `@local` linking and source-subpackage build at install time. Pseudo-plugins and "guaranteed to crash" packages are blocked before they can touch your profile;
+- 🧹 **Manage installed + clean up orphans** — enable / disable / update / uninstall, and even leftover "files exist but not mounted" plugins can be mounted or deleted right from the list;
+- 🚀 **Restart on top** — restart DSH in one click after installs, updates and toggles.
 
-- **Sidebar launcher** — injected into `sidebar.footer.action`, rendered right above the home sidebar's 设置 button; one click opens the hub.
-- **Standalone full-screen hub page** — `shell.overlay` overlay with a header bar: title, **"Restart now"** (two-step confirm, calls the Host `restartApp`), and a close button.
-- **Two tabs, one place** — the marketplace catalog and installed-plugin management live in a single full-screen page instead of deep inside Settings.
-- **Live catalog** — merges GitHub repos tagged `dsh-plugin` (`topic:dsh-plugin` search API), npm registry search results, and the community-curated awesome-dsh-plugin list, cached in memory for 5 minutes; the browser bundle has a direct-fetch fallback path.
-- **Search & sorting** — matches plugin name (including full repo name) and description; sort by recently updated / most starred / name.
-- **One card per plugin** — the repository owner's avatar as the icon (initial-letter fallback), plus name, description, topic tags, star count, and update date.
-- **"Release page" button** — opens the plugin's GitHub page in a new window.
-- **"Install locally" button** — after confirmation, the Host runs `pnpm add` in the active DSH profile directory (resolving an npm package name first, falling back to git), then appends any new `dsh.bundle.patch`-declaring dependency to `dsh.profile.bundles` — the same reconciliation `dsh plugin add` performs. Success reports "restart DSH to activate".
-- **Generic install hardening (automation, not per-plugin fixes)** — a fail-closed static security audit (`auditPackage`, blocks high-risk findings) plus post-install validation that rejects anything that would break DSH at boot:
-  - **Loadability check** — a plugin must declare `dsh.bundle.patch` AND resolve to a real entry file (`main` / `exports` / Node's implicit `index.js`); pseudo-plugins (e.g. deployment-script repos that fake `dsh.bundle`) are rejected at install time so the whole plugin tree cannot fail to load;
-  - **Runtime-compat guard** — older-runtime (rc.6) plugins get a **risk-confirmation** flow: known breaks (keyed-slot registration injection) are auto-repaired, the user acknowledges, the install proceeds, and the success message carries the warning;
-  - **`@local` link auto-creation** — patches referencing `@local/<pkg>` get a junction created automatically; no manual install script needed;
-  - **Duplicate-entry-id guard** — patches INSERTing loader ids that collide with the composed tree cancel the install with an explanation;
-  - **TypeScript source-only subpackages auto-build** — missing build output triggers `pnpm install` + build automatically; a failed build rolls back.
-- **Installed-tab management** — enable / disable per plugin (`setEnabled` / `cancelEnabled`), open the plugin's install directory in the file manager (`openLocal`), check for newer npm versions (`checkUpdates`), update one plugin to latest (`updatePlugin`), view its README (`fetchReadme`), and uninstall (`uninstallPlugin`, including `@local/*`-linked packages).
-- **Orphan-plugin management** — scans "files exist but not mounted" plugins (`scanOrphanPlugins`) and lists them as gray rows in the installed tab: **Mount** (`mountOrphan`, remounts and clears the disabled marker) or **Delete files** (`removeOrphanFiles`, removes residue; declared dependencies route to a full uninstall). Mounting re-validates the entry point so a broken plugin can never be reintroduced.
-- **Restart on top** — the hub header's "Restart now" button restarts DSH immediately after installs, updates, or toggles.
+> **No technical knowledge needed** — regular users can just open and use it; developers get a full installation safety net too.
 
-## Install
+---
 
-### Manual install into a Desktop / Web profile
+## 🚀 Quick start
 
-From a DSH terminal, target the profile you use (Desktop defaults to `desktop`, Web to `web`):
+From a DSH terminal (use `desktop` for the Desktop app, `web` for standalone web):
 
 ```bash
 dsh plugin --profile desktop add kidai-plugin-market-hub
 ```
 
-Local path or git spec works too:
+Then **restart DSH** — a "纪代市场" launcher appears above the 设置 (Settings) button in the home sidebar. Click it to open the full-screen marketplace.
 
-```bash
-dsh plugin --profile desktop add file:D:\path\to\kidai-plugin-market-hub
-dsh plugin --profile desktop add git+https://github.com/NokorinNishikino/kidai-plugin-market-hub.git
-```
-
-Then restart DSH. The `scripts/install-profile.ps1` helper performs the equivalent local install (copies the package into the profile tree and updates the manifest).
-
-> Requires `pnpm` on PATH (or the pnpm bundled with DSH), plus network access to `api.github.com` (catalog) and `registry.npmjs.org` (install validation).
-
-## Uninstall
+Uninstall:
 
 ```bash
 dsh plugin --profile desktop remove kidai-plugin-market-hub
 ```
 
-## Deployment environments
+> Requires a local `pnpm` (or DSH's bundled one) and network access to `api.github.com` (catalog) and `registry.npmjs.org` (install validation).
 
-KPMH works identically in both DSH deployment shapes (browse / install / uninstall / toggle / orphan management / updates / security audit):
+---
+
+## 🎯 Features
+
+### Browse
+
+- **Multi-source catalog** — GitHub / npm / awesome merged, live-fetched, 5-min cache + offline fallback;
+- **Search & sort** — match by name and description; sort by recently updated / stars / name;
+- **Plugin cards** — avatar, description, topics, stars and update time at a glance; jump to the GitHub release page in one click.
+
+### Install
+
+- **One-click local install** — auto-resolves npm names or GitHub repos, `pnpm add` + `bundles` reconciliation;
+- **Security audit** — static scan for high-risk patterns (dynamic execution, network calls, secret reads...); blocks on high-risk findings;
+- **Loadability validation** — pseudo-plugins with no importable entry (e.g. deployment-script repos faking `dsh.bundle`) are rejected at install time;
+- **Runtime compat** — older-runtime plugins get known breaks auto-repaired (keyed-slot injection), acknowledged before install, with a risk note on success;
+- **Auto-build** — TypeScript source-only subpackages are compiled automatically; a failed build rolls back.
+
+### Manage
+
+- **Enable / disable / update / uninstall** — all from the installed tab;
+- **Orphan plugins** — scan for unmounted leftover files; gray cards can be **mounted** or **deleted** directly;
+- **Open local directory** — locate an installed plugin in your file manager in one click.
+
+### Restart
+
+A permanent "Restart now" button on the hub header, two-step confirmed, applies immediately.
+
+---
+
+## 🖥️ Supported deployments
 
 | Deployment | How to start | Status |
 | --- | --- | --- |
 | **Desktop app** (embedded Web UI) | Launch DSH Desktop | ✅ Fully functional |
-| **Standalone Web deployment** | `dsh --profile web --port 8080` (or `dsh web --port 8080`) | ✅ Fully functional |
+| **Standalone Web** | `dsh --profile web --port 8080` | ✅ Fully functional |
 
-**The only difference**: a standalone Web deployment has no Electron runtime, so the hub header's "Restart now" button degrades to "please restart DSH manually" (`restartSupported=false`); everything else works over the same RPC channel as Desktop.
+Both work identically; the only difference is a standalone Web deployment has no Electron runtime, so "Restart now" degrades to a manual-restart hint.
 
-> **Note**: a standalone Web deployment MUST be started through the `dsh` command (it passes `--expose-internals`, which lets the loader resolve third-party bundles from the profile's `node_modules`). Running `node .../bin.js web` directly fails to load third-party plugins because that flag is missing.
+---
 
-## How it works
+## ⚙️ How it works (technical)
 
 | Part | File | Notes |
 | --- | --- | --- |
-| Host half | `lib/index.js` | Cordis plugin whose default export is `PluginMarketGateway` (a `TypertRemoteService`, namespace `pluginMarketHub`) exposing `listPublished` / `installed` / `installPlugin` / `setEnabled` / `openLocal` / `cancelEnabled` / `checkUpdates` / `updatePlugin` / `fetchReadme` / `auditPackage` / `restartApp` / `uninstallPlugin` / `scanOrphanPlugins` / `mountOrphan` / `removeOrphanFiles` via SRC Remote markers. |
-| Composition | `cordis.patch.yml` | Inserts the plugin rows; because the package also declares `dsh.client`, the same rows feed the browser module manifest. |
-| Client half | `lib/client.js` | Browser bundle registering the sidebar launcher (`sidebar.footer.action`) and the full-screen hub page (`shell.overlay`), mounting the `pluginMarketHub` Remote descriptors (hand-written strict codecs, no zod), and rendering the two-tab UI. |
-| Install channel | Host `installPlugin(spec)` | Validates the spec (npm name / GitHub repo), resolves pnpm, runs `pnpm add` in the profile directory, reconciles `dsh.profile.bundles`. |
-| Restart channel | Host `restartApp()` | Detects the running DSH deployment and requests a restart; the hub header shows the two-step "Restart now" button. |
+| Host half | `lib/index.js` | Cordis plugin, `PluginMarketGateway` (`TypertRemoteService`, namespace `pluginMarketHub`), exposing `listPublished` / `installed` / `installPlugin` / `setEnabled` / `openLocal` / `cancelEnabled` / `checkUpdates` / `updatePlugin` / `fetchReadme` / `auditPackage` / `restartApp` / `uninstallPlugin` / `scanOrphanPlugins` / `mountOrphan` / `removeOrphanFiles` via SRC markers. |
+| Composition | `cordis.patch.yml` | Inserts the plugin rows; because the package declares `dsh.client`, the same rows feed the browser module manifest. |
+| Client half | `lib/client.js` | Browser bundle: sidebar launcher (`sidebar.footer.action`) + full-screen hub page (`shell.overlay`), mounts the Remote descriptors (hand-written strict codecs), renders the two-tab UI. |
+| Install channel | Host `installPlugin(spec)` | Validate spec → resolve pnpm → `pnpm add` → reconcile `dsh.profile.bundles`. |
+| Restart channel | Host `restartApp()` | Detects the deployment and requests a restart; two-step confirm in the hub header. |
 
-## Catalog sources & network notes
+### Catalog sources
 
-Sources are tried in order; the first success wins (the tab shows which source was used below its heading):
+Tried in order; the first success wins (the tab shows which source was used):
 
-1. **GitHub API (official)** — `api.github.com` `topic:dsh-plugin` repository search;
-2. **GitHub API mirrors** — `ghfast.top` / `ghproxy.net` prefix proxies (used when the official API is unreachable);
-3. **npm official search** — `registry.npmjs.org/-/v1/search?text=dsh-plugin`, filtered to `dsh-plugin-*` / `dsh-*` names;
-4. **npmmirror search** — `registry.npmmirror.com/-/v1/search` (usually the fastest/most reliable from mainland China);
-5. **awesome-dsh-plugin curated list** — the community-maintained [`awesome-dsh-plugin/awesome-dsh-plugin`](https://github.com/awesome-dsh-plugin/awesome-dsh-plugin) README, parsed for `- [owner/repo](url) - description` bullets (including monorepo `#subpackage` entries) and merged into the catalog under an "AWESOME" source badge. Fetched through the same CDN-first chain as repo files, so it consumes no GitHub API quota.
+1. **GitHub API (official)** — `topic:dsh-plugin` search;
+2. **GitHub API mirrors** — `ghfast.top` / `ghproxy.net`;
+3. **npm official search** — `registry.npmjs.org/-/v1/search`;
+4. **npmmirror search** — `registry.npmmirror.com` (fastest from mainland China);
+5. **awesome-dsh-plugin curated list** — community-maintained, CDN-first fetch, no API quota.
 
-**GitHub install mirror fallback** — when `github.com` is unreachable, whole-repo installs automatically switch to the **tarball download chain** (codeload → ghproxy → ghfast → gh-proxy) instead of stalling for minutes on the git protocol.
+When `github.com` is unreachable, whole-repo installs automatically switch to the **tarball chain** (codeload → ghproxy → ghfast → gh-proxy) instead of stalling on the git protocol. If everything fails, the offline cache is returned.
 
-If every source fails, the last successfully fetched catalog persisted at `.plugin-market-cache.json` inside the profile directory is returned (marked "offline cache"); only a never-succeeded run reports an error.
+---
 
-**If the list still fails to load**, try any of:
+## 📚 More
 
-- Set the environment variable `DSH_PLUGIN_MARKET_GITHUB_API` to a working GitHub API mirror base (tried first), then restart DSH, e.g.:
-
-  ```powershell
-  setx DSH_PLUGIN_MARKET_GITHUB_API "https://ghfast.top/https://api.github.com"
-  ```
-
-  (`setx` takes effect for newly started processes only.)
-- Make sure at least one of `registry.npmjs.org` / `registry.npmmirror.com` is reachable — either npm source is enough for the catalog to load.
-- The "Refresh" button bypasses the 5-minute cache and forces a refetch.
-
-## Changelog
-
-See [CHANGELOG.md](CHANGELOG.md).
-
-## Develop & publish
-
-- Follow the community `dsh-plugin-*` naming convention and publish to npm; tag the GitHub repo with the `dsh-plugin` topic to appear in this marketplace.
-- Host changes (`lib/index.js`) take effect on restart; browser-bundle changes (`lib/client.js`) take effect on restart (or through the `dsh-client-hmr` dev chain).
-- Local syntax check: `node --check lib/index.js && node --check lib/client.js`.
-- Test suites: `node scripts/test-install-guard.mjs` (install hardening), `node scripts/smoke-test-hub.mjs` (Remote mounting), `node scripts/render-test-hub.mjs` (client render), `node scripts/test-client-patch.mjs` (client repair), `node scripts/test-awesome-stars.mjs` (catalog enrichment).
+- **Changelog**: [CHANGELOG.md](CHANGELOG.md)
+- **Develop & publish**: `lib/index.js` (Host) changes apply on restart; `lib/client.js` (browser) on restart or via `dsh-client-hmr`. Syntax check `node --check lib/index.js && node --check lib/client.js`; test suites live under `scripts/`.
 
 ## License
 
