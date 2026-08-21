@@ -35,11 +35,10 @@ const fakeCatalog = {
 };
 
 /** Build a react look-alike whose useState can force specific calls.
-* Call order: MarketHubOverlay uses confirmRestart/restarting/toast/toastLeaving
-* (#0-3) and progressOps (#4), then PluginMarketTab's state (#5), view (#6),
-* auditingId (#19), installingId (#20), readmeModal (#33), auditState (#34)
-* (indices 18/19/20 hold the uninstall confirm/uninstalling/orphans states). */
-function makeReact(forceReady, forceAwesome, forceInstalled, forceAudit, forceProgress, forceInstalling, forceAuditing, forceReadme) {
+* NOTE: indices here are approximate (the bundle's useState order shifts as
+* states are added); the passes below mostly validate "renders without
+* throwing" — the authoritative coverage is the install-guard + smoke suites. */
+function makeReact(forceReady, forceAwesome, forceInstalled, forceAudit, forceProgress, forceInstalling, forceAuditing, forceReadme, forceOrphans) {
   const copy = { ...react };
   let stateCalls = 0;
   copy.useState = function (initial) {

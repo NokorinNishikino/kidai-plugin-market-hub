@@ -2,7 +2,27 @@
 
 本文件使用 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/) 风格编写，版本号遵循[语义化版本](https://semver.org/lang/zh-CN/)。
 
+## [1.3.5] - 2026-08-20
+
+### 变更
+
+- **孤儿卡片改为两行紧凑布局** — 「已安装」页下方未挂载插件区块的卡片调整为**两行**：第一行图标 + 插件名 + 「未挂载」徽标 + 操作按钮（启用/删除）横向并排，第二行完整显示原因文本（可换行）；宽度与正常卡片一致（280px 网格），高度大幅压缩、无多余空白。窄视图行样式不变。
+- **CSS 热更新修复** — 修复 HMR 重建后页面仍使用旧 `<style>` 的问题：每次加载时若已注入的样式与最新 CSS 不一致则直接更新内容，样式改动即时生效，无需重启或清缓存。
+
+### 新增
+
+- **孤儿区块结构测试** — 新增 `scripts/test-orphan-section.mjs`，断言孤儿区块独立容器、标题、宽/窄网格、徽标、启用/删除操作及两行布局样式，防止后续改动破坏布局。
+
+### 兼容性
+
+- **keyed-slot 自动修补扩展至 rc.8 全部 4 个** — 修补范围从仅 `settings.plugin.item` 扩展到 `settings.plugin.item`、`conversation.chat.node`、`conversation.chat.commandview`、`tool.view.cordis`，旧插件在 rc.8 下注册这些 slot 而缺 `key` 时会被自动注入（与 1.3.4 兼容性说明一致，作为正式支持固化）。
+
 ## [1.3.4] - 2026-08-20
+
+### 兼容性
+
+- **DSH rc.8 兼容确认**：核对 npm 上 `@deepseek-ai/dsh*` 的 rc.8 发布（2026-08-19），`dsh-typert-protocol` 与 `dsh-api-gateway` 的 rc.7→rc.8 代码完全一致（Remote/SRC 协议零变化），`sidebar.footer.action` slot 保留；KPMH 的 5 个 client 注入包均有 rc.8。**无需代码调整即可在 rc.8 运行**。
+- **keyed-slot 修补扩展**：自动修补范围从仅 `settings.plugin.item` 扩展到 rc.8 的全部 4 个 keyed slot（`settings.plugin.item`、`conversation.chat.node`、`conversation.chat.commandview`、`tool.view.cordis`），旧插件在 rc.8 下注册这些 slot 而缺 `key` 时会被自动注入。
 
 ### 文档
 

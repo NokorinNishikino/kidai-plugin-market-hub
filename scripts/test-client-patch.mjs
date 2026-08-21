@@ -58,6 +58,24 @@ const check = (label, cond, detail = "") => {
 	check("list slot untouched", out.patched === false, out.source);
 }
 
+// 4b) rc.8 keyed slots beyond settings.plugin.item get patched too:
+// conversation.chat.node / conversation.chat.commandview / tool.view.cordis.
+{
+	const src = `ctx.slots.inject("conversation.chat.node", () => ctx.slots.register({
+				name: "conversation.chat.node",
+				id: "legacy-node",
+				order: 0
+			}, LegacyNodeView));`;
+	const out = patchKeyedSlotRegistrations(src);
+	check("conversation.chat.node patched (rc.8 keyed slot)", out.patched === true);
+	check("conversation.chat.node got key", out.source.includes('key: "legacy-node"'), out.source);
+
+	const src2 = `ctx.slots.inject("tool.view.cordis", () => ctx.slots.register({name:"tool.view.cordis",id:"cordis-run",order:0},CordisRun));`;
+	const out2 = patchKeyedSlotRegistrations(src2);
+	check("tool.view.cordis patched (rc.8 keyed slot)", out2.patched === true);
+	check("tool.view.cordis got key", /key:\s*"cordis-run"/.test(out2.source), out2.source);
+}
+
 // 5) Real AI-Novel-Writer client (workspace copy — currently has manual key)
 {
 	const real = readFileSync("D:/Deepseek Harness Desktop Workshop/ethanyoq-dsh-ai-novel-writer/lib/client.js", "utf8");

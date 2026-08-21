@@ -1,7 +1,7 @@
 {
   "name": "kidai-plugin-market-hub",
   "productName": "Kidai Plugin Market Hub 纪代插件市场",
-  "version": "1.3.4",
+  "version": "1.3.5",
   "description": "Kidai Plugin Market Hub (纪代插件市场 Hub) for DeepSeek Harness: a 纪代市场 launcher above the Settings button on the home sidebar that opens a standalone page (插件市场 / 已安装) with one-click local install and an immediate-restart button on top.",
   "license": "MIT",
   "type": "module",
